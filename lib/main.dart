@@ -10,10 +10,58 @@ class CrochetApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: const CalculatorScreen());
+    return MaterialApp(home: const OpeningPage());
   }
 }
 
+// home page where you can select calculator
+class OpeningPage extends StatelessWidget {
+  const OpeningPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Crochet Price Tool',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            const Text('Value your handmade art fairly.'),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CalculatorScreen(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 15,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text("Open Calculator"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// calculator screen where you can use the calcualtor
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
 
@@ -21,6 +69,7 @@ class CalculatorScreen extends StatefulWidget {
   State<CalculatorScreen> createState() => _CalculatorScreenState();
 }
 
+// calculator logic
 class _CalculatorScreenState extends State<CalculatorScreen> {
   String hoursInput = '';
   String materialsInput = '';
@@ -28,7 +77,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   double totalPrice = 0.0;
   double markup = 1.0;
   double wage = 10.0;
-  List<double> wageOptions = [for (double i = 10.0; i <= 20.0; i += 5.0) i];
+  List<double> wageOptions = [for (double i = 10.0; i <= 20.0; i += 0.25) i];
 
   void _calculatePrice() {
     double hours = double.tryParse(hoursInput) ?? 0.0;
