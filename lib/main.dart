@@ -138,7 +138,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         ),
       );
     });
-    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProjectsPage()),
+    );
   }
 
   @override
