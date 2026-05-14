@@ -12,7 +12,32 @@ class CrochetApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: const OpeningPage());
+    return MaterialApp(
+      home: const OpeningPage(),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+
+        // elevated button style
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal,
+            foregroundColor: Colors.white,
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
+          ),
+        ),
+
+        // floating action button style
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.teal,
+          foregroundColor: Colors.white,
+        ),
+      ),
+    );
   }
 }
 
@@ -43,19 +68,11 @@ class OpeningPage extends StatelessWidget {
                   ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
               child: const Text("Open Calculator"),
             ),
+
+            const SizedBox(height: 7),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -63,17 +80,6 @@ class OpeningPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const ProjectsPage()),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
               child: const Text("View Past Projects"),
             ),
           ],
@@ -162,6 +168,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 decoration: const InputDecoration(labelText: 'Project Name'),
                 onChanged: (value) => projectNameInput = value,
               ),
+            const SizedBox(height: 20),
 
             // hours input
             TextField(
@@ -201,10 +208,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               value: markup,
               min: 1.0,
               max: 5.0,
-              activeColor: const Color.fromARGB(255, 55, 93, 214),
-              inactiveColor: Colors.blueGrey,
-              thumbColor: const Color.fromARGB(255, 23, 60, 164),
-              divisions: 8,
               label: markup.toStringAsFixed(1),
               onChanged: (double newValue) {
                 setState(() {
@@ -238,17 +241,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   _saveProject();
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
               child: Text(
                 isSaveSelected ? 'Calculate Price and Save' : 'Calculate Price',
               ),
@@ -273,18 +265,6 @@ class ProjectsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CalculatorScreen(startWithSave: true),
-          ),
-        );
-      },
-      child: const Icon(Icons.add),
-    );
-
     return Scaffold(
       appBar: AppBar(title: const Text('Saved Projects')),
       body: myGlobalProjects.isEmpty
@@ -297,12 +277,23 @@ class ProjectsPage extends StatelessWidget {
                   leading: const Icon(Icons.architecture),
                   title: Text(project.name),
                   subtitle: Text(
-                    'Hours ${project.hours} | Wage: ${project.wage}',
+                    'Hours: ${project.hours} | Wage: \$${project.wage}',
                   ),
                   trailing: Text('\$${project.totalPrice.toStringAsFixed(2)}'),
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CalculatorScreen(startWithSave: true),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
