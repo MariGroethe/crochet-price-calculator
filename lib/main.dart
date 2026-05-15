@@ -100,6 +100,7 @@ class CalculatorScreen extends StatefulWidget {
 
 // calculator logic
 class _CalculatorScreenState extends State<CalculatorScreen> {
+  final _formkey = GlobalKey<FormState>();
   String hoursInput = '';
   String materialsInput = '';
   String projectNameInput = '';
@@ -127,22 +128,26 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _saveProject() {
-    final newProject = CrochetProject(
-      name: projectNameInput,
-      hours: double.tryParse(hoursInput) ?? 0.0,
-      materials: double.tryParse(materialsInput) ?? 0.0,
-      markup: markup,
-      wage: wage,
-    );
-    setState(() {
-      myGlobalProjects.add(newProject);
-    });
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProjectDetailScreen(project: newProject),
-      ),
-    );
+    if (_formkey.currentState!.validate()) {
+      final newProject = CrochetProject(
+        name: projectNameInput,
+        hours: double.tryParse(hoursInput) ?? 0.0,
+        materials: double.tryParse(materialsInput) ?? 0.0,
+        markup: markup,
+        wage: wage,
+      );
+      setState(() {
+        myGlobalProjects.add(newProject);
+      });
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProjectDetailScreen(project: newProject),
+        ),
+      );
+    } else {
+      debugPrint("Validation Failed");
+    }
   }
 
   @override
@@ -167,12 +172,32 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 const Text('Save Project'),
               ],
             ),
-            if (isSaveSelected)
-              TextField(
-                decoration: const InputDecoration(labelText: 'Project Name'),
-                onChanged: (value) => projectNameInput = value,
+            Form(
+              key: _formkey,
+              child: Column(
+                children: [
+                  if (isSaveSelected)
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Project Name',
+                        border: OutlineInputBorder(),
+                        errorStyle: TextStyle(color: Colors.red),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please provide a name';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) => projectNameInput = value,
+                    ),
+                ],
               ),
-            const SizedBox(height: 20),
+            ),
+            // TextField(
+            //   decoration: const InputDecoration(labelText: 'Project Name'),
+            //   onChanged: (value) => projectNameInput = value,
+            // ),
 
             // hours input
             TextField(
