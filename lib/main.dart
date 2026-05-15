@@ -92,7 +92,12 @@ class OpeningPage extends StatelessWidget {
 // calculator screen where you can use the calcualtor
 class CalculatorScreen extends StatefulWidget {
   final bool startWithSave;
-  const CalculatorScreen({super.key, this.startWithSave = false});
+  final CrochetProject? projectToEdit;
+  const CalculatorScreen({
+    super.key,
+    this.startWithSave = false,
+    this.projectToEdit,
+  });
 
   @override
   State<CalculatorScreen> createState() => _CalculatorScreenState();
@@ -105,6 +110,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   String materialsInput = '';
   String projectNameInput = '';
 
+  // controllers for auto filling in fields when editing project
+  late TextEditingController nameController;
+  late TextEditingController hoursController;
+  late TextEditingController materialsController;
+
   double totalPrice = 0.0;
   double markup = 1.0;
   double wage = 10.0;
@@ -115,7 +125,25 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   @override
   void initState() {
     super.initState();
-    isSaveSelected = widget.startWithSave;
+
+    nameController = TextEditingController();
+    hoursController = TextEditingController();
+    materialsController = TextEditingController();
+
+    if (widget.projectToEdit != null) {
+      nameController.text = widget.projectToEdit!.name;
+      hoursController.text = widget.projectToEdit!.hours.toString();
+      materialsController.text = widget.projectToEdit!.materials.toString();
+
+      isSaveSelected = true;
+      projectNameInput = widget.projectToEdit!.name;
+      hoursInput = widget.projectToEdit!.hours.toString();
+      materialsInput = widget.projectToEdit!.materials.toString();
+      markup = widget.projectToEdit!.markup;
+      wage = widget.projectToEdit!.wage;
+    } else {
+      isSaveSelected = widget.startWithSave;
+    }
   }
 
   void _calculatePrice() {
@@ -129,20 +157,36 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   void _saveProject() {
     if (_formkey.currentState!.validate()) {
-      final newProject = CrochetProject(
-        name: projectNameInput,
-        hours: double.tryParse(hoursInput) ?? 0.0,
-        materials: double.tryParse(materialsInput) ?? 0.0,
-        markup: markup,
-        wage: wage,
-      );
-      setState(() {
-        myGlobalProjects.add(newProject);
-      });
+      CrochetProject projectToDisplay;
+
+      if (widget.projectToEdit != null) {
+        setState(() {
+          widget.projectToEdit!.name = projectNameInput;
+          widget.projectToEdit!.hours = double.tryParse(hoursInput) ?? 0.0;
+          widget.projectToEdit!.materials =
+              double.tryParse(materialsInput) ?? 0.0;
+          widget.projectToEdit!.markup = markup;
+          widget.projectToEdit!.wage = wage;
+        });
+        projectToDisplay = widget.projectToEdit!;
+      } else {
+        final newProject = CrochetProject(
+          name: projectNameInput,
+          hours: double.tryParse(hoursInput) ?? 0.0,
+          materials: double.tryParse(materialsInput) ?? 0.0,
+          markup: markup,
+          wage: wage,
+        );
+        setState(() {
+          myGlobalProjects.add(newProject);
+        });
+        projectToDisplay = newProject;
+      }
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ProjectDetailScreen(project: newProject),
+          builder: (context) => ProjectDetailScreen(project: projectToDisplay),
         ),
       );
     } else {
@@ -178,6 +222,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 children: [
                   if (isSaveSelected)
                     TextFormField(
+                      controller: nameController,
                       decoration: const InputDecoration(
                         labelText: 'Project Name',
                         border: OutlineInputBorder(),
@@ -191,16 +236,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       },
                       onChanged: (value) => projectNameInput = value,
                     ),
+                  SizedBox(height: 20),
                 ],
               ),
             ),
-            // TextField(
-            //   decoration: const InputDecoration(labelText: 'Project Name'),
-            //   onChanged: (value) => projectNameInput = value,
-            // ),
 
             // hours input
             TextField(
+              controller: hoursController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Hours Worked',
@@ -217,6 +260,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
             // materials input
             TextField(
+              controller: materialsController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Material Costs',
@@ -285,6 +329,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    hoursController.dispose();
+    materialsController.dispose();
+
+    super.dispose();
   }
 }
 
@@ -363,7 +416,20 @@ class ProjectDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(project.name),
-        actions: [IconButton(icon: const Icon(Icons.edit), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      CalculatorScreen(projectToEdit: project),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -379,7 +445,7 @@ class ProjectDetailScreen extends StatelessWidget {
             Text('Hours: ${project.hours}'),
             Text('Hourly Wage: \$${project.wage}'),
             Text('Material Cost: \$${project.materials}'),
-            Text('Markup: ${project.markup}x'),
+            Text('Markup: ${project.markup.toStringAsFixed(2)}x'),
           ],
         ),
       ),
