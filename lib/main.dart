@@ -127,20 +127,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _saveProject() {
+    final newProject = CrochetProject(
+      name: projectNameInput,
+      hours: double.tryParse(hoursInput) ?? 0.0,
+      materials: double.tryParse(materialsInput) ?? 0.0,
+      markup: markup,
+      wage: wage,
+    );
     setState(() {
-      myGlobalProjects.add(
-        CrochetProject(
-          name: projectNameInput,
-          hours: double.tryParse(hoursInput) ?? 0.0,
-          materials: double.tryParse(materialsInput) ?? 0.0,
-          markup: markup,
-          wage: wage,
-        ),
-      );
+      myGlobalProjects.add(newProject);
     });
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const ProjectsPage()),
+      MaterialPageRoute(
+        builder: (context) => ProjectDetailScreen(project: newProject),
+      ),
     );
   }
 
@@ -279,10 +280,17 @@ class ProjectsPage extends StatelessWidget {
                 return ListTile(
                   leading: const Icon(Icons.architecture),
                   title: Text(project.name),
-                  subtitle: Text(
-                    'Hours: ${project.hours} | Wage: \$${project.wage}',
-                  ),
-                  trailing: Text('\$${project.totalPrice.toStringAsFixed(2)}'),
+                  subtitle: Text('\$${project.totalPrice.toStringAsFixed(2)}'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ProjectDetailScreen(project: project),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -317,4 +325,39 @@ class CrochetProject {
   });
 
   double get totalPrice => (hours * wage) + (materials * markup);
+}
+
+// screen where project details will be displayed after being click on in project screen or after creating new project
+class ProjectDetailScreen extends StatelessWidget {
+  final CrochetProject project;
+
+  const ProjectDetailScreen({super.key, required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(project.name),
+        actions: [IconButton(icon: const Icon(Icons.edit), onPressed: () {})],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Total price: \$${project.totalPrice.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+            const Divider(),
+            const SizedBox(height: 10),
+            Text('Hours: ${project.hours}'),
+            Text('Hourly Wage: \$${project.wage}'),
+            Text('Material Cost: \$${project.materials}'),
+            Text('Markup: ${project.markup}x'),
+          ],
+        ),
+      ),
+    );
+  }
 }
